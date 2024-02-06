@@ -1,0 +1,38 @@
+services:
+  accounts-service:
+    image: asocarras/accounts-service:s4
+    container_name: accounts-service-container
+    ports:
+      - 8080:8080
+    deploy:
+      resources:
+        limits:
+          memory: 700m
+    networks:
+      - eazybank
+  loans-service:
+    image: asocarras/loans-service:s4
+    container_name: loans-service-container
+    ports:
+      - 8090:8090
+    deploy:
+      resources:
+        limits:
+          memory: 700m
+    networks:
+      - eazybank
+  cards-service:
+    image: asocarras/cards-service:s4
+    container_name: cards-service-container
+    ports:
+      - 9000:9000
+    deploy:
+      resources:
+        limits:
+          memory: 700m
+    networks:
+      - eazybank
+
+networks:
+  eazybank:
+    driver: bridge
