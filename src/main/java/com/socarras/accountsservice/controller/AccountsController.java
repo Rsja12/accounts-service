@@ -1,6 +1,7 @@
 package com.socarras.accountsservice.controller;
 
 import com.socarras.accountsservice.constants.AccountsConstants;
+import com.socarras.accountsservice.dto.AccountsContactInfoDto;
 import com.socarras.accountsservice.dto.CustomerDto;
 import com.socarras.accountsservice.dto.ErrorResponseDto;
 import com.socarras.accountsservice.dto.ResponseDto;
@@ -34,10 +35,14 @@ public class AccountsController {
 
     private final IAccountsService accountsServiceImpl;
 
+    private final AccountsContactInfoDto accountsContactInfoDto;
+
     public AccountsController(Environment environment,
-                              IAccountsService accountsServiceImpl) {
+                              IAccountsService accountsServiceImpl,
+                              AccountsContactInfoDto accountsContactInfoDto) {
         this.environment = environment;
         this.accountsServiceImpl = accountsServiceImpl;
+        this.accountsContactInfoDto = accountsContactInfoDto;
     }
 
     @PostMapping("/create")
@@ -134,6 +139,18 @@ public class AccountsController {
         return ResponseEntity
                 .status(HttpStatus.OK)
                 .body(environment.getProperty("JAVA_HOME"));
+    }
+
+    @Operation(summary = "Get contact info", description = "Gets contact info for API")
+    @ApiResponses({
+            @ApiResponse(responseCode = "201", description = "Created"),
+            @ApiResponse(responseCode = "500", content = @Content(schema = @Schema(implementation = ErrorResponseDto.class)))
+    })
+    @GetMapping("/contact-info")
+    public ResponseEntity<AccountsContactInfoDto> getContactInfo() {
+        return ResponseEntity
+                .status(HttpStatus.OK)
+                .body(accountsContactInfoDto);
     }
 
 }
