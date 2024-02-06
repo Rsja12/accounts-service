@@ -1,6 +1,7 @@
 package com.socarras.accountsservice.controller;
 
 import com.socarras.accountsservice.constants.AccountsConstants;
+import com.socarras.accountsservice.dto.AccountsContactInfoDto;
 import com.socarras.accountsservice.dto.CustomerDto;
 import com.socarras.accountsservice.dto.ErrorResponseDto;
 import com.socarras.accountsservice.dto.ResponseDto;
@@ -13,6 +14,8 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Pattern;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.env.Environment;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -25,10 +28,21 @@ import org.springframework.web.bind.annotation.*;
 @Tag(name = "Accounts APIs in EazyBank", description = "CRUD REST APIs for Accounts in EazyBank")
 public class AccountsController {
 
+    @Value("${build.version}")
+    private String buildVersion;
+
+    private final Environment environment;
+
     private final IAccountsService accountsServiceImpl;
 
-    public AccountsController(IAccountsService accountsServiceImpl) {
+    private final AccountsContactInfoDto accountsContactInfoDto;
+
+    public AccountsController(Environment environment,
+                              IAccountsService accountsServiceImpl,
+                              AccountsContactInfoDto accountsContactInfoDto) {
+        this.environment = environment;
         this.accountsServiceImpl = accountsServiceImpl;
+        this.accountsContactInfoDto = accountsContactInfoDto;
     }
 
     @PostMapping("/create")
@@ -99,6 +113,44 @@ public class AccountsController {
                     .status(HttpStatus.EXPECTATION_FAILED)
                     .body(new ResponseDto(AccountsConstants.STATUS_417, AccountsConstants.MESSAGE_417_DELETE));
         }
+    }
+
+    @Operation(summary = "Get build info", description = "Gets currently deployed build info")
+    @ApiResponses({
+            @ApiResponse(responseCode = "201", description = "Created"),
+            @ApiResponse(responseCode = "500", content = @Content(schema = @Schema(implementation = ErrorResponseDto.class)))
+    })
+    @GetMapping("/build-info")
+    public ResponseEntity<String> getBuildInfo() {
+        return ResponseEntity
+                .status(HttpStatus.OK)
+                .body(buildVersion);
+    }
+
+// TODO: look up what my property name is for 'JAVA_HOME'. My property name is different so there's no output
+
+    @Operation(summary = "Get java version", description = "Gets currently deployed java version")
+    @ApiResponses({
+            @ApiResponse(responseCode = "201", description = "Created"),
+            @ApiResponse(responseCode = "500", content = @Content(schema = @Schema(implementation = ErrorResponseDto.class)))
+    })
+    @GetMapping("/java-version")
+    public ResponseEntity<String> getJavaVersion() {
+        return ResponseEntity
+                .status(HttpStatus.OK)
+                .body(environment.getProperty("JAVA_HOME"));
+    }
+
+    @Operation(summary = "Get contact info", description = "Gets contact info for API")
+    @ApiResponses({
+            @ApiResponse(responseCode = "201", description = "Created"),
+            @ApiResponse(responseCode = "500", content = @Content(schema = @Schema(implementation = ErrorResponseDto.class)))
+    })
+    @GetMapping("/contact-info")
+    public ResponseEntity<AccountsContactInfoDto> getContactInfo() {
+        return ResponseEntity
+                .status(HttpStatus.OK)
+                .body(accountsContactInfoDto);
     }
 
 }
