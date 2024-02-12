@@ -7,7 +7,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
-@FeignClient("cards-service")
+@FeignClient(name = "cards-service")
 public interface CardsFeignClient {
 
     @GetMapping(value = "/api/fetch", consumes = MediaType.APPLICATION_JSON_VALUE)
