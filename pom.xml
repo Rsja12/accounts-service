@@ -93,7 +93,7 @@
 				<version>3.4.0</version>
 				<configuration>
 					<to>
-						<image>asocarras/${project.artifactId}:s6</image>
+						<image>asocarras/${project.artifactId}:s8</image>
 					</to>
 				</configuration>
 			</plugin>
