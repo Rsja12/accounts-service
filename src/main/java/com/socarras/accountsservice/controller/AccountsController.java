@@ -6,6 +6,8 @@ import com.socarras.accountsservice.dto.CustomerDto;
 import com.socarras.accountsservice.dto.ErrorResponseDto;
 import com.socarras.accountsservice.dto.ResponseDto;
 import com.socarras.accountsservice.service.IAccountsService;
+import io.github.resilience4j.ratelimiter.annotation.RateLimiter;
+import io.github.resilience4j.retry.annotation.Retry;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -120,6 +122,7 @@ public class AccountsController {
             @ApiResponse(responseCode = "201", description = "Created"),
             @ApiResponse(responseCode = "500", content = @Content(schema = @Schema(implementation = ErrorResponseDto.class)))
     })
+    @Retry(name = "getBuildInfo")
     @GetMapping("/build-info")
     public ResponseEntity<String> getBuildInfo() {
         return ResponseEntity
@@ -127,13 +130,12 @@ public class AccountsController {
                 .body(buildVersion);
     }
 
-// TODO: look up what my property name is for 'JAVA_HOME'. My property name is different so there's no output
-
     @Operation(summary = "Get java version", description = "Gets currently deployed java version")
     @ApiResponses({
             @ApiResponse(responseCode = "201", description = "Created"),
             @ApiResponse(responseCode = "500", content = @Content(schema = @Schema(implementation = ErrorResponseDto.class)))
     })
+    @RateLimiter(name = "getJavaVersion")
     @GetMapping("/java-version")
     public ResponseEntity<String> getJavaVersion() {
         return ResponseEntity
