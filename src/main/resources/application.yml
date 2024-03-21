@@ -25,6 +25,10 @@ spring:
     openfeign:
       circuitbreaker:
         enabled: true
+    stream:
+      bindings:
+        sendCommunication-out-0:
+          destination: send-communication
 
 management:
   endpoints:
