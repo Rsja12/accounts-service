@@ -2,6 +2,7 @@ package com.socarras.accountsservice.service.impl;
 
 import com.socarras.accountsservice.constants.AccountsConstants;
 import com.socarras.accountsservice.dto.AccountsDto;
+import com.socarras.accountsservice.dto.AccountsMessageDto;
 import com.socarras.accountsservice.dto.CustomerDto;
 import com.socarras.accountsservice.entity.Accounts;
 import com.socarras.accountsservice.entity.Customer;
@@ -12,21 +13,27 @@ import com.socarras.accountsservice.mapper.CustomerMapper;
 import com.socarras.accountsservice.repository.AccountsRepository;
 import com.socarras.accountsservice.repository.CustomerRepository;
 import com.socarras.accountsservice.service.IAccountsService;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.cloud.stream.function.StreamBridge;
 import org.springframework.stereotype.Service;
 
 import java.util.Optional;
 import java.util.Random;
 
+@Slf4j
 @Service
 public class AccountsServiceImpl implements IAccountsService {
 
     private final AccountsRepository accountsRepository;
     private final CustomerRepository customerRepository;
+    private final StreamBridge streamBridge;
 
     public AccountsServiceImpl(AccountsRepository accountsRepository,
-                               CustomerRepository customerRepository) {
+                               CustomerRepository customerRepository,
+                               StreamBridge streamBridge) {
         this.accountsRepository = accountsRepository;
         this.customerRepository = customerRepository;
+        this.streamBridge = streamBridge;
     }
 
     @Override
@@ -39,7 +46,8 @@ public class AccountsServiceImpl implements IAccountsService {
         }
 
         Customer savedCustomer = customerRepository.save(customer);
-        accountsRepository.save(createNewAccount(savedCustomer));
+        Accounts savedAccount = accountsRepository.save(createNewAccount(savedCustomer));
+        sendCommunication(savedAccount, savedCustomer);
     }
 
     @Override
@@ -98,5 +106,14 @@ public class AccountsServiceImpl implements IAccountsService {
         newAccount.setAccountType(AccountsConstants.SAVINGS);
         newAccount.setBranchAddress(AccountsConstants.ADDRESS);
         return newAccount;
+    }
+
+    private void sendCommunication(Accounts account, Customer customer) {
+        var accountsMessageDto = new AccountsMessageDto(account.getAccountNumber(), customer.getName(),
+                customer.getEmail(), customer.getMobileNumber());
+
+        log.info("Sending communication request for details: {}", accountsMessageDto);
+        var result = streamBridge.send("sendCommunication-out-0", accountsMessageDto);
+        log.info("Is the communication request successfully sent?: {}", result);
     }
 }
