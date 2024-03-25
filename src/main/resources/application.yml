@@ -25,10 +25,15 @@ spring:
     openfeign:
       circuitbreaker:
         enabled: true
+    function:
+      definition: updateCommunicationStatus
     stream:
       bindings:
         sendCommunication-out-0:
           destination: send-communication
+        updateCommunicationStatus-in-0:
+          destination: communication-sent
+          group: ${spring.application.name}
   rabbitmq:
     host: localhost
     port: 5672

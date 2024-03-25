@@ -42,7 +42,8 @@ public class AccountsServiceImpl implements IAccountsService {
         Optional<Customer> optionalCustomer = customerRepository.findByMobileNumber(customerDto.getMobileNumber());
 
         if (optionalCustomer.isPresent()) {
-            throw new CustomerAlreadyExistsException("Customer already registered for mobile number: " + customerDto.getMobileNumber());
+            throw new CustomerAlreadyExistsException("Customer already registered for mobile number: " +
+                    customerDto.getMobileNumber());
         }
 
         Customer savedCustomer = customerRepository.save(customer);
@@ -56,7 +57,8 @@ public class AccountsServiceImpl implements IAccountsService {
                 .orElseThrow(() -> new ResourceNotFoundException("Customer", "mobileNumber", mobileNumber));
 
         Accounts accounts = accountsRepository.findByCustomerId(customer.getCustomerId())
-                .orElseThrow(() -> new ResourceNotFoundException("Account", "customerId", customer.getCustomerId().toString()));
+                .orElseThrow(() -> new ResourceNotFoundException("Account", "customerId",
+                        customer.getCustomerId().toString()));
 
         CustomerDto customerDto = CustomerMapper.mapToCustomerDto(customer, new CustomerDto());
         AccountsDto accountsDto = AccountsMapper.mapToAccountsDto(accounts, new AccountsDto());
@@ -72,7 +74,8 @@ public class AccountsServiceImpl implements IAccountsService {
 
         if (accountsDto != null) {
             Accounts accounts = accountsRepository.findById(accountsDto.getAccountNumber())
-                    .orElseThrow(() -> new ResourceNotFoundException("Account", "accountNumber", accountsDto.getAccountNumber().toString()));
+                    .orElseThrow(() -> new ResourceNotFoundException("Account", "accountNumber",
+                            accountsDto.getAccountNumber().toString()));
 
             AccountsMapper.mapToAccounts(accountsDto, accounts);
             accounts = accountsRepository.save(accounts);
@@ -96,6 +99,21 @@ public class AccountsServiceImpl implements IAccountsService {
         accountsRepository.deleteByCustomerId(customer.getCustomerId());
         customerRepository.deleteById(customer.getCustomerId());
         return true;
+    }
+
+    @Override
+    public boolean updateCommunicationStatus(Long accountNumber) {
+        boolean isUpdated = false;
+        if (accountNumber != null) {
+            Accounts accounts = accountsRepository.findById(accountNumber)
+                    .orElseThrow(() -> new ResourceNotFoundException("Account", "AccountNumber",
+                            accountNumber.toString()));
+            accounts.setCommunicationSw(true);
+            accountsRepository.save(accounts);
+            isUpdated = true;
+        }
+
+        return isUpdated;
     }
 
     private Accounts createNewAccount(Customer customer) {
